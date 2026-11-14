@@ -1,0 +1,10 @@
+{"q": "C drive on web02 is at 93% and the log folder is huge", "expected": "RB-001"}
+{"q": "Disk keeps filling but IIS logs are already small", "expected": "RB-002"}
+{"q": "Site returns 503 Service Unavailable and the health probe fails", "expected": "RB-003"}
+{"q": "Application pool keeps stopping after a few requests", "expected": "RB-003"}
+{"q": "w3wp memory climbs all day until the server slows down", "expected": "RB-004"}
+{"q": "Lots of 500 errors started right after this morning's release", "expected": "RB-005"}
+{"q": "World Wide Web Publishing Service is stopped", "expected": "RB-006"}
+{"q": "Cannot reach one instance at all, RDP and probe both fail", "expected": "RB-007"}
+{"q": "No samples from the detector for the last hour", "expected": "RB-008"}
+{"q": "WER crash dump files are taking up gigabytes", "expected": "RB-001"}
