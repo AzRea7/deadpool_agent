@@ -1,6 +1,7 @@
-"""Split runbooks into one chunk per '## ' section."""
+"""Split runbooks into chunks: one per '## ' section (default) or fixed-size word windows."""
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,17 +20,24 @@ class Chunk:
         return f"{self.runbook_id}#{self.section}"
 
 
-def chunk_runbook(path: Path) -> list[Chunk]:
+Chunker = Callable[[Path], list[Chunk]]
+
+
+def _parse_header(path: Path) -> tuple[str, str, list[str]]:
     lines = path.read_text(encoding="utf-8").splitlines()
     match = _HEADER.match(lines[0]) if lines else None
     if match is None:
         raise ValueError(f"{path.name}: first line must be '# RB-NNN: Title'")
-    runbook_id, title = match.group(1), match.group(2).strip()
+    return match.group(1), match.group(2).strip(), lines[1:]
+
+
+def chunk_runbook(path: Path) -> list[Chunk]:
+    runbook_id, title, body_lines = _parse_header(path)
 
     chunks: list[Chunk] = []
     section: str | None = None
     body: list[str] = []
-    for line in [*lines[1:], "## END"]:
+    for line in [*body_lines, "## END"]:
         if line.startswith("## "):
             text = "\n".join(body).strip()
             if section is not None and text:
@@ -41,5 +49,27 @@ def chunk_runbook(path: Path) -> list[Chunk]:
     return chunks
 
 
-def load_runbooks(folder: Path) -> list[Chunk]:
-    return [c for p in sorted(folder.glob("RB-*.md")) for c in chunk_runbook(p)]
+def chunk_fixed(path: Path, size: int, overlap: int) -> list[Chunk]:
+    """Slide a window of `size` words (stepping size - overlap) over the whole runbook body.
+
+    Section headers stay in the text as plain words, so a window can span two sections.
+    This is the comparison baseline for section chunking (ADR-002).
+    """
+    if not 0 <= overlap < size:
+        raise ValueError("need 0 <= overlap < size")
+    runbook_id, title, body_lines = _parse_header(path)
+    words = " ".join(body_lines).split()
+    step = size - overlap
+    chunks: list[Chunk] = []
+    for start in range(0, max(len(words) - overlap, 1), step):
+        window = " ".join(words[start : start + size])
+        chunks.append(Chunk(runbook_id, title, f"w{start}", f"{title}\n{window}"))
+    return chunks
+
+
+def fixed_chunker(size: int, overlap: int) -> Chunker:
+    return lambda path: chunk_fixed(path, size, overlap)
+
+
+def load_runbooks(folder: Path, chunker: Chunker = chunk_runbook) -> list[Chunk]:
+    return [c for p in sorted(folder.glob("RB-*.md")) for c in chunker(p)]

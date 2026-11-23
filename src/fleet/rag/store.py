@@ -15,12 +15,12 @@ def get_client(url: str = "http://localhost:6333") -> QdrantClient:
     return QdrantClient(url=url)
 
 
-def index_chunks(client: QdrantClient, chunks: list[Chunk]) -> int:
+def index_chunks(client: QdrantClient, chunks: list[Chunk], collection: str = COLLECTION) -> int:
     """Rebuild the collection from scratch. Simple, and the runbook set is small."""
-    if client.collection_exists(COLLECTION):
-        client.delete_collection(COLLECTION)
+    if client.collection_exists(collection):
+        client.delete_collection(collection)
     client.create_collection(
-        COLLECTION, vectors_config=VectorParams(size=DIM, distance=Distance.COSINE)
+        collection, vectors_config=VectorParams(size=DIM, distance=Distance.COSINE)
     )
     vectors = embed_passages([c.text for c in chunks])
     points = [
@@ -37,5 +37,5 @@ def index_chunks(client: QdrantClient, chunks: list[Chunk]) -> int:
         )
         for c, v in zip(chunks, vectors, strict=True)
     ]
-    client.upsert(COLLECTION, points=points)
+    client.upsert(collection, points=points)
     return len(points)

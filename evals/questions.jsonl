@@ -1,0 +1,30 @@
+{"q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.", "expected": "RB-001"}
+{"q": "Can we purge the old access logs? They are eating the OS drive on web02.", "expected": "RB-001"}
+{"q": "The Windows Temp directory is full of junk and the boot volume is nearly out of room", "expected": "RB-001"}
+{"q": "Error reporting dumps from crashed processes are taking up 15 GB on one server", "expected": "RB-001"}
+{"q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour", "expected": "RB-002"}
+{"q": "FailedReqLogFiles grew to 30 GB because someone left request tracing switched on", "expected": "RB-002"}
+{"q": "Something unidentified is consuming storage on the OS disk and the usual cleanup targets are tiny", "expected": "RB-002"}
+{"q": "The SoftwareDistribution folder is enormous, is it safe to remove?", "expected": "RB-002"}
+{"q": "One node behind the load balancer keeps failing its probe while the others are fine, and users on it get 503", "expected": "RB-003"}
+{"q": "Rapid-fail protection switched off our pool on web01", "expected": "RB-003"}
+{"q": "Requests on web05 never complete, they just spin until the client gives up", "expected": "RB-003"}
+{"q": "Application log shows w3wp.exe as the faulting application every few minutes", "expected": "RB-003"}
+{"q": "Private bytes for the worker process have been rising since midnight even though traffic is low", "expected": "RB-004"}
+{"q": "OutOfMemoryException in the app logs on one server after it has been up for a day", "expected": "RB-004"}
+{"q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening", "expected": "RB-004"}
+{"q": "Resource-Exhaustion-Detector warns the system is low on virtual memory", "expected": "RB-004"}
+{"q": "Error rate jumped across the whole fleet ten minutes after we shipped v2.14", "expected": "RB-005"}
+{"q": "Every server returns HTTP 500.19 since the config change went out", "expected": "RB-005"}
+{"q": "Customers get 502 Bad Gateway on all nodes since the release pipeline finished", "expected": "RB-005"}
+{"q": "Failures tripled after deployment, should we go back to the previous version?", "expected": "RB-005"}
+{"q": "Nothing on web02 responds, every site refuses connections and pools will not start", "expected": "RB-006"}
+{"q": "Service Control Manager event 7034: the World Wide Web Publishing Service terminated unexpectedly", "expected": "RB-006"}
+{"q": "Windows Process Activation Service is not running on one VM", "expected": "RB-006"}
+{"q": "All IIS sites on a single host went down together, other hosts are fine", "expected": "RB-006"}
+{"q": "The VM is not sending heartbeats and Run Command just times out", "expected": "RB-007"}
+{"q": "Boot diagnostics screenshot shows a blue screen on instance 4", "expected": "RB-007"}
+{"q": "Should we reimage the scale set node that has been unresponsive for an hour?", "expected": "RB-007"}
+{"q": "The monitoring job has failed two runs in a row", "expected": "RB-008"}
+{"q": "The agent's managed identity lost access to Log Analytics and the detector errors out", "expected": "RB-008"}
+{"q": "Postgres has had no new samples since yesterday and no health job heartbeat either", "expected": "RB-008"}

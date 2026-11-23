@@ -1,0 +1,307 @@
+[
+  {
+    "strategy": "section",
+    "chunks": 32,
+    "hit@1": 0.9,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "mrr@3": 0.95,
+    "mrr@5": 0.95,
+    "top1_misses": [
+      {
+        "q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-002",
+          "RB-001",
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Requests on web05 never complete, they just spin until the client gives up",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-006",
+          "RB-003",
+          "RB-005"
+        ]
+      },
+      {
+        "q": "Application log shows w3wp.exe as the faulting application every few minutes",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-004",
+          "RB-003",
+          "RB-006"
+        ]
+      }
+    ]
+  },
+  {
+    "strategy": "fixed-64w",
+    "chunks": 46,
+    "hit@1": 0.7666666666666667,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "mrr@3": 0.8722222222222222,
+    "mrr@5": 0.8722222222222222,
+    "top1_misses": [
+      {
+        "q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.",
+        "expected": "RB-001",
+        "rank": 3,
+        "got": [
+          "RB-002",
+          "RB-004",
+          "RB-001"
+        ]
+      },
+      {
+        "q": "Can we purge the old access logs? They are eating the OS drive on web02.",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-002",
+          "RB-001",
+          "RB-007"
+        ]
+      },
+      {
+        "q": "The Windows Temp directory is full of junk and the boot volume is nearly out of room",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-002",
+          "RB-001",
+          "RB-007"
+        ]
+      },
+      {
+        "q": "Error reporting dumps from crashed processes are taking up 15 GB on one server",
+        "expected": "RB-001",
+        "rank": 3,
+        "got": [
+          "RB-002",
+          "RB-004",
+          "RB-001"
+        ]
+      },
+      {
+        "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
+        "expected": "RB-002",
+        "rank": 2,
+        "got": [
+          "RB-001",
+          "RB-002",
+          "RB-007"
+        ]
+      },
+      {
+        "q": "Application log shows w3wp.exe as the faulting application every few minutes",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-004",
+          "RB-003",
+          "RB-006"
+        ]
+      },
+      {
+        "q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-006",
+          "RB-004",
+          "RB-002"
+        ]
+      }
+    ]
+  },
+  {
+    "strategy": "fixed-128w",
+    "chunks": 23,
+    "hit@1": 0.8333333333333334,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "mrr@3": 0.9166666666666666,
+    "mrr@5": 0.9166666666666666,
+    "top1_misses": [
+      {
+        "q": "Can we purge the old access logs? They are eating the OS drive on web02.",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-002",
+          "RB-001",
+          "RB-007"
+        ]
+      },
+      {
+        "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
+        "expected": "RB-002",
+        "rank": 2,
+        "got": [
+          "RB-001",
+          "RB-002",
+          "RB-007"
+        ]
+      },
+      {
+        "q": "Application log shows w3wp.exe as the faulting application every few minutes",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-004",
+          "RB-003",
+          "RB-006"
+        ]
+      },
+      {
+        "q": "OutOfMemoryException in the app logs on one server after it has been up for a day",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-004",
+          "RB-003"
+        ]
+      },
+      {
+        "q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-006",
+          "RB-004",
+          "RB-003"
+        ]
+      }
+    ]
+  },
+  {
+    "strategy": "fixed-256w",
+    "chunks": 12,
+    "hit@1": 0.8333333333333334,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "mrr@3": 0.9111111111111111,
+    "mrr@5": 0.9111111111111111,
+    "top1_misses": [
+      {
+        "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
+        "expected": "RB-002",
+        "rank": 2,
+        "got": [
+          "RB-001",
+          "RB-002",
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Application log shows w3wp.exe as the faulting application every few minutes",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-004",
+          "RB-003",
+          "RB-006"
+        ]
+      },
+      {
+        "q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening",
+        "expected": "RB-004",
+        "rank": 3,
+        "got": [
+          "RB-006",
+          "RB-003",
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Nothing on web02 responds, every site refuses connections and pools will not start",
+        "expected": "RB-006",
+        "rank": 2,
+        "got": [
+          "RB-003",
+          "RB-006",
+          "RB-005"
+        ]
+      },
+      {
+        "q": "All IIS sites on a single host went down together, other hosts are fine",
+        "expected": "RB-006",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-006",
+          "RB-003"
+        ]
+      }
+    ]
+  },
+  {
+    "strategy": "whole-doc",
+    "chunks": 8,
+    "hit@1": 0.8333333333333334,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "mrr@3": 0.9111111111111111,
+    "mrr@5": 0.9111111111111111,
+    "top1_misses": [
+      {
+        "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
+        "expected": "RB-002",
+        "rank": 2,
+        "got": [
+          "RB-001",
+          "RB-002",
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Application log shows w3wp.exe as the faulting application every few minutes",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-004",
+          "RB-003",
+          "RB-006"
+        ]
+      },
+      {
+        "q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening",
+        "expected": "RB-004",
+        "rank": 3,
+        "got": [
+          "RB-003",
+          "RB-006",
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Nothing on web02 responds, every site refuses connections and pools will not start",
+        "expected": "RB-006",
+        "rank": 2,
+        "got": [
+          "RB-003",
+          "RB-006",
+          "RB-005"
+        ]
+      },
+      {
+        "q": "All IIS sites on a single host went down together, other hosts are fine",
+        "expected": "RB-006",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-006",
+          "RB-003"
+        ]
+      }
+    ]
+  }
+]

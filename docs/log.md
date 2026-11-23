@@ -10,3 +10,8 @@
 - **Caveat:** the smoke questions and runbooks were written by the same person, so the score is optimistic. Phase 2's 30 questions need wording that doesn't echo the runbooks.
 - **Blocked:** Phase 0 Azure baseline still waits on an Azure account (moved to next week).
 - **Next:** phase 2: 30-question eval set, hit rate and MRR script, compare section vs fixed-size chunking, tune top-k. Watch RB-006 outranking RB-003 and RB-007.
+
+## 2026-11-23 · phase 2
+- **Done:** 30-question eval set, `run_rag_eval.py` (hit@1/3/5, MRR, `--gate`), fixed-size chunker for comparison, ADR-002. Section chunks win: hit@3 = 1.00, MRR@3 = 0.95, top-1 = 0.90 (fixed-size top-1 is 0.77-0.83). Kept k = 3 and no further tuning, to avoid overfitting.
+- **Blocked:** Phase 0 Azure baseline still not deployed (`az` installed, not logged in). Eval gate is not in CI yet because CI has no Qdrant or model.
+- **Next:** finish the phase 0 baseline, then phase 3: chaos injector for disk and app pool, detector rules, sample store, incident schema in Postgres.
