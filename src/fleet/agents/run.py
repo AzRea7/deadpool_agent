@@ -1,8 +1,15 @@
-"""Run the diagnose agent on a recorded incident case, with real Claude and the real MCP server.
+"""Run the agent on a recorded incident case, with real Claude and the real MCP servers.
 
+Diagnose only (phase 4):
     uv run python -m fleet.agents.run --case evals/incidents/pool_crash.json
     uv run python -m fleet.agents.run --case ... --thread demo1 --kill-after-tools 2   # dies
     uv run python -m fleet.agents.run --case ... --thread demo1 --resume               # resumes
+
+Full incident: diagnose, plan, gate, act, verify on a simulated host (phase 5):
+    uv run python -m fleet.agents.run --case evals/incidents/disk_freb.json --remediate
+    # a Tier 2 plan pauses and prints its plan_hash; approve or reject it:
+    uv run python -m fleet.agents.run --case ... --thread T --approve j.ortiz --plan-hash H
+    uv run python -m fleet.agents.run --case ... --thread T --reject j.ortiz --note "not now"
 
 Needs ANTHROPIC_API_KEY (or another SDK credential), Postgres and the Qdrant runbook index.
 """
@@ -16,10 +23,22 @@ from pathlib import Path
 from typing import Any
 
 from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.types import Command
 
-from fleet.agents.diagnose import AnthropicModel, Model, build_graph, rag_retriever, run_config
+from fleet.agents.diagnose import (
+    AnthropicModel,
+    Model,
+    Retriever,
+    build_graph,
+    rag_retriever,
+    run_config,
+)
+from fleet.agents.remediate import build_incident_graph
 from fleet.agents.toolbox import StdioToolBox, ToolBox
-from fleet.detector.store import DEFAULT_DSN
+from fleet.detector.store import DEFAULT_DSN, connect
+from fleet.governance.audit import PostgresAuditLog
+from fleet.governance.executor import SimExecutor, host_from_case
+from fleet.governance.service import ActionService
 
 # Claude Opus 5.5, $ per million tokens.
 PRICE = {"input": 4.00, "output": 20.00, "cache_read": 0.20, "cache_write": 5.00}
@@ -78,10 +97,48 @@ def run_case(
         toolbox.close()
 
 
+def run_incident(
+    case: Path,
+    model: Model,
+    thread_id: str,
+    resume: dict[str, str] | None = None,
+    retriever: Retriever | None = None,
+) -> dict[str, Any]:
+    """Full incident graph on a simulated host built from the case. Audit goes to Postgres.
+
+    The simulated host is rebuilt from the case on every run, so a resumed approval sees the
+    same host the plan was dry-run against (on Azure it would be the real instance).
+    """
+    spec = json.loads(case.read_text(encoding="utf-8"))
+    env = dict(os.environ, FLEET_DIAGNOSE_CASE=str(case))
+    diagnose_tools = StdioToolBox("fleet.mcp_servers.diagnose_server", env=env)
+    dsn = os.environ.get("FLEET_PG_DSN", DEFAULT_DSN)
+    try:
+        with PostgresSaver.from_conn_string(dsn) as saver, connect(dsn) as conn:
+            saver.setup()
+            service = ActionService(SimExecutor([host_from_case(spec)]), PostgresAuditLog(conn))
+            graph = build_incident_graph(
+                model,
+                diagnose_tools,
+                retriever or rag_retriever(),
+                service,
+                saver,
+                verify_wait_seconds=5,
+            )
+            arg: Any = (
+                Command(resume=resume)
+                if resume
+                else {"incident": spec["incident"], "run_id": thread_id}
+            )
+            return dict(graph.invoke(arg, run_config(thread_id)))
+    finally:
+        diagnose_tools.close()
+
+
 def tool_calls(state: dict[str, Any]) -> list[str]:
     return [
         f"{b['name']}({json.dumps(b.get('input', {}), sort_keys=True)})"
-        for m in state.get("messages", [])
+        for m in [*state.get("messages", []), *state.get("plan_messages", [])]
         if m["role"] == "assistant"
         for b in m["content"]
         if b.get("type") == "tool_use"

@@ -145,7 +145,8 @@ class Model(Protocol):
 
 # ---------- state ----------
 
-Outcome = Literal["", "diagnosed", "escalated"]
+# diagnose-only runs end at diagnosed/escalated; full incident runs continue to the others.
+Outcome = Literal["", "diagnosed", "escalated", "resolved", "proposed", "rejected"]
 
 
 class DiagnoseState(TypedDict, total=False):
@@ -191,12 +192,11 @@ def validate_diagnosis(d: dict[str, Any], retrieved: Sequence[str]) -> str | Non
 # ---------- graph ----------
 
 
-def build_graph(
-    model: Model,
-    toolbox: ToolBox,
-    retriever: Retriever,
-    checkpointer: BaseCheckpointSaver[Any] | None = None,
-) -> CompiledStateGraph[DiagnoseState, Any, DiagnoseState, DiagnoseState]:
+def add_diagnose_nodes(
+    graph: Any, model: Model, toolbox: ToolBox, retriever: Retriever, on_diagnosed: str = END
+) -> None:
+    """Add prepare -> model <-> tools to a graph. An accepted diagnosis continues to
+    on_diagnosed (END for the diagnose-only graph, the planner for the incident graph)."""
     tools = [*toolbox.specs(), SEARCH_RUNBOOK_TOOL, SUBMIT_TOOL]
 
     def prepare(state: DiagnoseState) -> DiagnoseState:
@@ -282,16 +282,28 @@ def build_graph(
         return "tools" if last["role"] == "assistant" else "model"
 
     def after_tools(state: DiagnoseState) -> str:
+        if state["outcome"] == "diagnosed":
+            return on_diagnosed
         return END if state["outcome"] else "model"
 
-    graph = StateGraph(DiagnoseState)
     graph.add_node("prepare", prepare)
     graph.add_node("model", call_model)
     graph.add_node("tools", run_tools)
     graph.add_edge(START, "prepare")
     graph.add_edge("prepare", "model")
     graph.add_conditional_edges("model", after_model, ["tools", "model", END])
-    graph.add_conditional_edges("tools", after_tools, ["model", END])
+    graph.add_conditional_edges("tools", after_tools, sorted({"model", END, on_diagnosed}))
+
+
+def build_graph(
+    model: Model,
+    toolbox: ToolBox,
+    retriever: Retriever,
+    checkpointer: BaseCheckpointSaver[Any] | None = None,
+) -> CompiledStateGraph[DiagnoseState, Any, DiagnoseState, DiagnoseState]:
+    """Diagnose only: ends after an accepted diagnosis (phase 4)."""
+    graph = StateGraph(DiagnoseState)
+    add_diagnose_nodes(graph, model, toolbox, retriever)
     return graph.compile(checkpointer=checkpointer)
 
 

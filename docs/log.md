@@ -30,3 +30,8 @@
 - **Done:** host type (`os`, `web_server`) on instances and incidents; scenario `app_pool_down` renamed `web_down`; runbooks tagged by platform, RB-009..RB-012 added for Linux/Apache, search filtered by platform; diagnose tools renamed OS-neutral (`system_log_tail`, `web_log_summary`, `web_server_state`) with journald/Apache sources on Linux; 4 Linux recorded incidents; `linux.bicep` + cloud-init, `log_retention.sh`, Linux fill test, `chaos/fill_disk.sh`, `chaos/stop_apache.sh`. Retrieval on 42 questions: hit@3 1.00, MRR@3 0.92 (Windows 0.93, Linux 0.90). 50 tests.
 - **Blocked:** same as before: no Azure until 2026-12-24, no Anthropic key for the live replay eval (now 8 cases).
 - **Next:** phase 5 action catalog, built per-OS from the start.
+
+## 2026-11-24 · phase 5 (started early; planned Dec 14-20)
+- **Done:** action catalog (15 actions, Tier 0/1/2, per OS, Pydantic params, fixed templates), allowlist with never-delete rules, dry-run hashes, `ActionService` gates (catalog, allowlist, citation, dry run, blast radius, approval), append-only Postgres audit log, simulated executor, action MCP server, and the full LangGraph incident graph: diagnose -> plan -> gate -> approve (interrupt) -> act -> verify. Runner gained `--remediate`, `--approve`, `--reject`. ADR-004, ADR-005. 99 tests: no path runs an unapproved Tier 2 action; every action has before/after/verify audit rows; a crash after an action cannot repeat it.
+- **Blocked:** live Claude runs (no API key) and Azure (account hold until 2026-12-24). The executor is simulated until the Run Command executor lands in phase 6.
+- **Next:** phase 6: the 15-minute detector job, alerts, heartbeat, the Azure executor and Log Analytics backend, end-to-end for disk and app pool. MVP tag v0.1.
