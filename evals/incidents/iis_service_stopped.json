@@ -1,0 +1,29 @@
+{
+  "description": "Detector says app_pool_down, but the real cause is WAS/W3SVC stopped after patching. Tests that diagnosis does not just echo the detector label.",
+  "expected_runbook": "RB-006",
+  "incident": {
+    "instance": "fleet000000", "scenario": "app_pool_down", "severity": "critical",
+    "reason": "5 of 5 health probes failed in 5 min",
+    "evidence": {"failed": 5, "probes": 5}
+  },
+  "metrics": {
+    "fleet000000|probe_ok": [[7, 1], [5, 0], [4, 0], [3, 0], [2, 0], [1, 0]],
+    "fleet000000|disk_used_pct": [[60, 51.0], [5, 51.0]]
+  },
+  "events": {
+    "fleet000000|System": [
+      {"minutes_ago": 12, "id": 19, "source": "WindowsUpdateClient", "level": "Information",
+       "message": "Installation Successful: Windows successfully installed the following update: 2026-11 Cumulative Update for Microsoft server operating system version 21H2"},
+      {"minutes_ago": 6, "id": 7034, "source": "Service Control Manager", "level": "Error",
+       "message": "The Windows Process Activation Service service terminated unexpectedly. It has done this 1 time(s)."},
+      {"minutes_ago": 6, "id": 7036, "source": "Service Control Manager", "level": "Information",
+       "message": "The World Wide Web Publishing Service service entered the stopped state."}
+    ],
+    "fleet000000|Application": []
+  },
+  "iis": {"fleet000000": {"minutes": 15, "requests": 120, "status": {"200": 120}, "httperr": {}}},
+  "deploys": [{"hours_ago": 30, "version": "2.14.0", "by": "pipeline", "notes": "Checkout price rules refactor"}],
+  "disk_scan": {"fleet000000": [{"path": "C:\\inetpub\\logs\\LogFiles", "gb": 0.8, "files": 130, "oldest_days": 7}]},
+  "app_pools": {"fleet000000": [{"name": "DefaultAppPool", "state": "Unknown (WAS not running)"}]},
+  "services": {"fleet000000": [{"name": "WAS", "status": "Stopped"}, {"name": "W3SVC", "status": "Stopped"}]}
+}

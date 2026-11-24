@@ -1,0 +1,31 @@
+{
+  "description": "Disk filling from IIS logs that retention never cleaned (retention task missing on a new instance).",
+  "expected_runbook": "RB-001",
+  "incident": {
+    "instance": "fleet000002", "scenario": "disk_filling", "severity": "critical",
+    "reason": "C: 96% used",
+    "evidence": {"used_pct": 96.0, "slope_pct_per_hour": 0.4, "hours_to_full": 10.0}
+  },
+  "metrics": {
+    "fleet000002|disk_used_pct": [[360, 93.6], [240, 94.4], [120, 95.2], [5, 96.0]],
+    "fleet000002|probe_ok": [[10, 1], [5, 1], [1, 1]]
+  },
+  "events": {
+    "fleet000002|System": [
+      {"minutes_ago": 30, "id": 2013, "source": "srv", "level": "Warning",
+       "message": "The C: disk is at or near capacity. You may need to delete some files."}
+    ],
+    "fleet000002|Application": []
+  },
+  "iis": {"fleet000002": {"minutes": 60, "requests": 18240, "status": {"200": 17950, "304": 260, "404": 30}, "httperr": {}}},
+  "deploys": [{"hours_ago": 72, "version": "2.13.0", "by": "pipeline", "notes": "Routine release"}],
+  "disk_scan": {"fleet000002": [
+    {"path": "C:\\inetpub\\logs\\LogFiles", "gb": 14.2, "files": 1260, "oldest_days": 41},
+    {"path": "C:\\Windows", "gb": 9.8, "files": 98000, "oldest_days": 400},
+    {"path": "C:\\Windows\\Temp", "gb": 0.3, "files": 210, "oldest_days": 12},
+    {"path": "C:\\ProgramData\\Microsoft\\Windows\\WER", "gb": 0.1, "files": 4, "oldest_days": 3},
+    {"path": "C:\\inetpub\\logs\\FailedReqLogFiles", "gb": 0.0, "files": 0, "oldest_days": 0}
+  ]},
+  "app_pools": {"fleet000002": [{"name": "DefaultAppPool", "state": "Started"}]},
+  "services": {"fleet000002": [{"name": "WAS", "status": "Running"}, {"name": "W3SVC", "status": "Running"}]}
+}
