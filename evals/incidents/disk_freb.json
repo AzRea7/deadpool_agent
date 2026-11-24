@@ -2,25 +2,141 @@
   "description": "Disk filling from Failed Request Tracing left on after a debugging session. IIS logs are within retention.",
   "expected_runbook": "RB-002",
   "incident": {
-    "instance": "fleet000001", "scenario": "disk_filling", "severity": "warning",
+    "instance": "fleet000001",
+    "scenario": "disk_filling",
+    "severity": "warning",
     "reason": "C: 71% used, projected full in 9.5h",
-    "evidence": {"used_pct": 71.0, "slope_pct_per_hour": 3.05, "hours_to_full": 9.5}
+    "evidence": {
+      "used_pct": 71.0,
+      "slope_pct_per_hour": 3.05,
+      "hours_to_full": 9.5
+    },
+    "os": "windows",
+    "web_server": "iis"
   },
   "metrics": {
-    "fleet000001|disk_used_pct": [[360, 55.0], [300, 55.1], [240, 58.0], [180, 61.1], [120, 64.9], [60, 68.0], [5, 71.0]],
-    "fleet000001|probe_ok": [[10, 1], [5, 1], [1, 1]]
+    "fleet000001|disk_used_pct": [
+      [
+        360,
+        55.0
+      ],
+      [
+        300,
+        55.1
+      ],
+      [
+        240,
+        58.0
+      ],
+      [
+        180,
+        61.1
+      ],
+      [
+        120,
+        64.9
+      ],
+      [
+        60,
+        68.0
+      ],
+      [
+        5,
+        71.0
+      ]
+    ],
+    "fleet000001|probe_ok": [
+      [
+        10,
+        1
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ]
   },
-  "events": {"fleet000001|System": [], "fleet000001|Application": []},
-  "iis": {"fleet000001": {"minutes": 60, "requests": 20110, "status": {"200": 19700, "500": 410}, "httperr": {}}},
-  "deploys": [{"hours_ago": 5, "version": "2.14.0-hotfix", "by": "j.ortiz",
-               "notes": "Enable failedRequestTracing for checkout 500 investigation"}],
-  "disk_scan": {"fleet000001": [
-    {"path": "C:\\inetpub\\logs\\FailedReqLogFiles", "gb": 6.1, "files": 48211, "oldest_days": 0},
-    {"path": "C:\\inetpub\\logs\\LogFiles", "gb": 1.1, "files": 160, "oldest_days": 7},
-    {"path": "C:\\Windows", "gb": 9.6, "files": 97000, "oldest_days": 400},
-    {"path": "C:\\Windows\\Temp", "gb": 0.2, "files": 150, "oldest_days": 6},
-    {"path": "C:\\ProgramData\\Microsoft\\Windows\\WER", "gb": 0.0, "files": 0, "oldest_days": 0}
-  ]},
-  "app_pools": {"fleet000001": [{"name": "DefaultAppPool", "state": "Started"}]},
-  "services": {"fleet000001": [{"name": "WAS", "status": "Running"}, {"name": "W3SVC", "status": "Running"}]}
+  "events": {
+    "fleet000001|system": [],
+    "fleet000001|application": []
+  },
+  "deploys": [
+    {
+      "hours_ago": 5,
+      "version": "2.14.0-hotfix",
+      "by": "j.ortiz",
+      "notes": "Enable failedRequestTracing for checkout 500 investigation"
+    }
+  ],
+  "disk_scan": {
+    "fleet000001": {
+      "folders": [
+        {
+          "path": "C:\\inetpub\\logs\\FailedReqLogFiles",
+          "gb": 6.1,
+          "files": 48211,
+          "oldest_days": 0
+        },
+        {
+          "path": "C:\\inetpub\\logs\\LogFiles",
+          "gb": 1.1,
+          "files": 160,
+          "oldest_days": 7
+        },
+        {
+          "path": "C:\\Windows",
+          "gb": 9.6,
+          "files": 97000,
+          "oldest_days": 400
+        },
+        {
+          "path": "C:\\Windows\\Temp",
+          "gb": 0.2,
+          "files": 150,
+          "oldest_days": 6
+        },
+        {
+          "path": "C:\\ProgramData\\Microsoft\\Windows\\WER",
+          "gb": 0.0,
+          "files": 0,
+          "oldest_days": 0
+        }
+      ]
+    }
+  },
+  "web_log": {
+    "fleet000001": {
+      "minutes": 60,
+      "requests": 20110,
+      "status": {
+        "200": 19700,
+        "500": 410
+      },
+      "httperr": {}
+    }
+  },
+  "web_server": {
+    "fleet000001": {
+      "app_pools": [
+        {
+          "name": "DefaultAppPool",
+          "state": "Started"
+        }
+      ],
+      "services": [
+        {
+          "name": "WAS",
+          "status": "Running"
+        },
+        {
+          "name": "W3SVC",
+          "status": "Running"
+        }
+      ]
+    }
+  }
 }

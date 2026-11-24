@@ -1,0 +1,37 @@
+{
+  "description": "Health probes fail because the kernel OOM killer keeps killing Apache children; memory has fallen for six hours. Looks like an Apache crash (RB-011) but the cause is memory (RB-012).",
+  "expected_runbook": "RB-012",
+  "incident": {
+    "instance": "lxweb000004", "scenario": "web_down", "severity": "critical",
+    "reason": "3 of 5 health probes failed in 5 min", "os": "linux", "web_server": "apache",
+    "evidence": {"failed": 3, "probes": 5}
+  },
+  "metrics": {
+    "lxweb000004|probe_ok": [[8, 1], [5, 0], [4, 1], [3, 0], [2, 0], [1, 1]],
+    "lxweb000004|disk_used_pct": [[60, 47.0], [5, 47.0]],
+    "lxweb000004|available_memory_mb": [[360, 3150], [300, 2620], [240, 2080], [180, 1510], [120, 940], [60, 410], [5, 85]]
+  },
+  "events": {
+    "lxweb000004|system": [
+      {"minutes_ago": 6, "unit": "kernel", "priority": "err",
+       "message": "Out of memory: Killed process 30211 (apache2) total-vm:2483120kB, anon-rss:1912044kB, file-rss:0kB, shmem-rss:2048kB, UID:33 pgtables:4100kB oom_score_adj:0"},
+      {"minutes_ago": 3, "unit": "kernel", "priority": "err",
+       "message": "Out of memory: Killed process 30544 (apache2) total-vm:2411880kB, anon-rss:1850112kB, file-rss:0kB, shmem-rss:2048kB, UID:33 pgtables:4020kB oom_score_adj:0"}
+    ],
+    "lxweb000004|application": [
+      {"minutes_ago": 6, "priority": "notice", "message": "[core:notice] [pid 801] AH00052: child pid 30211 exit signal Killed (9)"},
+      {"minutes_ago": 3, "priority": "notice", "message": "[core:notice] [pid 801] AH00052: child pid 30544 exit signal Killed (9)"}
+    ]
+  },
+  "deploys": [{"hours_ago": 9, "version": "2.14.0", "by": "pipeline", "notes": "Image thumbnail module upgrade (mod_thumb 3.2)"}],
+  "disk_scan": {"lxweb000004": {"df_used_gb": 14.1, "df_size_gb": 30.0, "du_total_gb": 14.0,
+                                 "folders": [{"path": "/var/log/apache2", "gb": 0.8, "files": 15, "oldest_days": 7}],
+                                 "deleted_open_files": []}},
+  "web_log": {"lxweb000004": {"minutes": 15, "requests": 2980,
+                               "status": {"200": 2520, "502": 40, "503": 420}, "error_codes": {"AH00052": 2}}},
+  "web_server": {"lxweb000004": {"unit": "apache2.service", "active": "active (running)",
+                                  "configtest": "Syntax OK", "busy_workers": 31, "max_request_workers": 150,
+                                  "max_connections_per_child": 0,
+                                  "largest_processes_rss_mb": [{"pid": 30602, "comm": "apache2", "rss_mb": 1790},
+                                                               {"pid": 30640, "comm": "apache2", "rss_mb": 1620}]}}
+}

@@ -1,12 +1,26 @@
 [
   {
+    "per_platform": {
+      "linux": {
+        "n": 12,
+        "hit@1": 0.8333333333333334,
+        "hit@3": 1.0,
+        "mrr@3": 0.9027777777777778
+      },
+      "windows": {
+        "n": 30,
+        "hit@1": 0.8666666666666667,
+        "hit@3": 1.0,
+        "mrr@3": 0.9333333333333333
+      }
+    },
     "strategy": "section",
-    "chunks": 32,
-    "hit@1": 0.9,
+    "chunks": 48,
+    "hit@1": 0.8571428571428571,
     "hit@3": 1.0,
     "hit@5": 1.0,
-    "mrr@3": 0.95,
-    "mrr@5": 0.95,
+    "mrr@3": 0.9246031746031746,
+    "mrr@5": 0.9246031746031746,
     "top1_misses": [
       {
         "q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.",
@@ -37,17 +51,61 @@
           "RB-003",
           "RB-006"
         ]
+      },
+      {
+        "q": "OutOfMemoryException in the app logs on one server after it has been up for a day",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-004",
+          "RB-003"
+        ]
+      },
+      {
+        "q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal",
+        "expected": "RB-010",
+        "rank": 2,
+        "got": [
+          "RB-009",
+          "RB-010",
+          "RB-012"
+        ]
+      },
+      {
+        "q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping",
+        "expected": "RB-012",
+        "rank": 3,
+        "got": [
+          "RB-007",
+          "RB-009",
+          "RB-012"
+        ]
       }
     ]
   },
   {
+    "per_platform": {
+      "linux": {
+        "n": 12,
+        "hit@1": 0.8333333333333334,
+        "hit@3": 1.0,
+        "mrr@3": 0.9027777777777778
+      },
+      "windows": {
+        "n": 30,
+        "hit@1": 0.7666666666666667,
+        "hit@3": 1.0,
+        "mrr@3": 0.8722222222222222
+      }
+    },
     "strategy": "fixed-64w",
-    "chunks": 46,
-    "hit@1": 0.7666666666666667,
+    "chunks": 75,
+    "hit@1": 0.7857142857142857,
     "hit@3": 1.0,
     "hit@5": 1.0,
-    "mrr@3": 0.8722222222222222,
-    "mrr@5": 0.8722222222222222,
+    "mrr@3": 0.8809523809523809,
+    "mrr@5": 0.8809523809523809,
     "top1_misses": [
       {
         "q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.",
@@ -118,17 +176,51 @@
           "RB-004",
           "RB-002"
         ]
+      },
+      {
+        "q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal",
+        "expected": "RB-010",
+        "rank": 2,
+        "got": [
+          "RB-009",
+          "RB-010",
+          "RB-012"
+        ]
+      },
+      {
+        "q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping",
+        "expected": "RB-012",
+        "rank": 3,
+        "got": [
+          "RB-007",
+          "RB-009",
+          "RB-012"
+        ]
       }
     ]
   },
   {
+    "per_platform": {
+      "linux": {
+        "n": 12,
+        "hit@1": 0.8333333333333334,
+        "hit@3": 1.0,
+        "mrr@3": 0.9166666666666666
+      },
+      "windows": {
+        "n": 30,
+        "hit@1": 0.8,
+        "hit@3": 1.0,
+        "mrr@3": 0.9
+      }
+    },
     "strategy": "fixed-128w",
-    "chunks": 23,
-    "hit@1": 0.8333333333333334,
+    "chunks": 37,
+    "hit@1": 0.8095238095238095,
     "hit@3": 1.0,
     "hit@5": 1.0,
-    "mrr@3": 0.9166666666666666,
-    "mrr@5": 0.9166666666666666,
+    "mrr@3": 0.9047619047619048,
+    "mrr@5": 0.9047619047619048,
     "top1_misses": [
       {
         "q": "Can we purge the old access logs? They are eating the OS drive on web02.",
@@ -147,7 +239,17 @@
         "got": [
           "RB-001",
           "RB-002",
-          "RB-007"
+          "RB-004"
+        ]
+      },
+      {
+        "q": "Requests on web05 never complete, they just spin until the client gives up",
+        "expected": "RB-003",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-003",
+          "RB-006"
         ]
       },
       {
@@ -177,20 +279,64 @@
         "got": [
           "RB-006",
           "RB-004",
-          "RB-003"
+          "RB-005"
+        ]
+      },
+      {
+        "q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal",
+        "expected": "RB-010",
+        "rank": 2,
+        "got": [
+          "RB-009",
+          "RB-010",
+          "RB-012"
+        ]
+      },
+      {
+        "q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping",
+        "expected": "RB-012",
+        "rank": 2,
+        "got": [
+          "RB-007",
+          "RB-012",
+          "RB-009"
         ]
       }
     ]
   },
   {
+    "per_platform": {
+      "linux": {
+        "n": 12,
+        "hit@1": 0.75,
+        "hit@3": 1.0,
+        "mrr@3": 0.8611111111111112
+      },
+      "windows": {
+        "n": 30,
+        "hit@1": 0.7333333333333333,
+        "hit@3": 1.0,
+        "mrr@3": 0.861111111111111
+      }
+    },
     "strategy": "fixed-256w",
-    "chunks": 12,
-    "hit@1": 0.8333333333333334,
+    "chunks": 20,
+    "hit@1": 0.7380952380952381,
     "hit@3": 1.0,
     "hit@5": 1.0,
-    "mrr@3": 0.9111111111111111,
-    "mrr@5": 0.9111111111111111,
+    "mrr@3": 0.861111111111111,
+    "mrr@5": 0.861111111111111,
     "top1_misses": [
+      {
+        "q": "Error reporting dumps from crashed processes are taking up 15 GB on one server",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-001",
+          "RB-004"
+        ]
+      },
       {
         "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
         "expected": "RB-002",
@@ -209,6 +355,16 @@
           "RB-004",
           "RB-003",
           "RB-006"
+        ]
+      },
+      {
+        "q": "OutOfMemoryException in the app logs on one server after it has been up for a day",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-004",
+          "RB-001"
         ]
       },
       {
@@ -232,6 +388,16 @@
         ]
       },
       {
+        "q": "Service Control Manager event 7034: the World Wide Web Publishing Service terminated unexpectedly",
+        "expected": "RB-006",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-006",
+          "RB-004"
+        ]
+      },
+      {
         "q": "All IIS sites on a single host went down together, other hosts are fine",
         "expected": "RB-006",
         "rank": 2,
@@ -239,19 +405,73 @@
           "RB-005",
           "RB-006",
           "RB-003"
+        ]
+      },
+      {
+        "q": "Root filesystem on web-lx2 is at 94% and /var/log/apache2 has access logs going back two months",
+        "expected": "RB-009",
+        "rank": 2,
+        "got": [
+          "RB-010",
+          "RB-009",
+          "RB-005"
+        ]
+      },
+      {
+        "q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal",
+        "expected": "RB-010",
+        "rank": 2,
+        "got": [
+          "RB-009",
+          "RB-010",
+          "RB-012"
+        ]
+      },
+      {
+        "q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping",
+        "expected": "RB-012",
+        "rank": 3,
+        "got": [
+          "RB-007",
+          "RB-005",
+          "RB-012"
         ]
       }
     ]
   },
   {
+    "per_platform": {
+      "linux": {
+        "n": 12,
+        "hit@1": 0.75,
+        "hit@3": 1.0,
+        "mrr@3": 0.8611111111111112
+      },
+      "windows": {
+        "n": 30,
+        "hit@1": 0.7666666666666667,
+        "hit@3": 1.0,
+        "mrr@3": 0.8777777777777778
+      }
+    },
     "strategy": "whole-doc",
-    "chunks": 8,
-    "hit@1": 0.8333333333333334,
+    "chunks": 12,
+    "hit@1": 0.7619047619047619,
     "hit@3": 1.0,
     "hit@5": 1.0,
-    "mrr@3": 0.9111111111111111,
-    "mrr@5": 0.9111111111111111,
+    "mrr@3": 0.8730158730158729,
+    "mrr@5": 0.8730158730158729,
     "top1_misses": [
+      {
+        "q": "Error reporting dumps from crashed processes are taking up 15 GB on one server",
+        "expected": "RB-001",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-001",
+          "RB-004"
+        ]
+      },
       {
         "q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour",
         "expected": "RB-002",
@@ -270,6 +490,16 @@
           "RB-004",
           "RB-003",
           "RB-006"
+        ]
+      },
+      {
+        "q": "OutOfMemoryException in the app logs on one server after it has been up for a day",
+        "expected": "RB-004",
+        "rank": 2,
+        "got": [
+          "RB-005",
+          "RB-004",
+          "RB-003"
         ]
       },
       {
@@ -293,13 +523,43 @@
         ]
       },
       {
-        "q": "All IIS sites on a single host went down together, other hosts are fine",
+        "q": "Service Control Manager event 7034: the World Wide Web Publishing Service terminated unexpectedly",
         "expected": "RB-006",
         "rank": 2,
         "got": [
           "RB-005",
           "RB-006",
           "RB-003"
+        ]
+      },
+      {
+        "q": "Root filesystem on web-lx2 is at 94% and /var/log/apache2 has access logs going back two months",
+        "expected": "RB-009",
+        "rank": 2,
+        "got": [
+          "RB-010",
+          "RB-009",
+          "RB-005"
+        ]
+      },
+      {
+        "q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal",
+        "expected": "RB-010",
+        "rank": 2,
+        "got": [
+          "RB-009",
+          "RB-010",
+          "RB-012"
+        ]
+      },
+      {
+        "q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping",
+        "expected": "RB-012",
+        "rank": 3,
+        "got": [
+          "RB-007",
+          "RB-005",
+          "RB-012"
         ]
       }
     ]

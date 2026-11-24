@@ -2,8 +2,10 @@
 
 Runs every 15 minutes in production (Container Apps Job, phase 6). Locally:
 
-    uv run python -m fleet.detector.job --sim fill    # disk fills on sim-web0
-    uv run python -m fleet.detector.job --sim pool    # app pool stops on sim-web1
+    uv run python -m fleet.detector.job --sim fill         # C: fills on sim-web0 (Windows/IIS)
+    uv run python -m fleet.detector.job --sim fill-linux   # / fills on sim-lx0 (Linux/Apache)
+    uv run python -m fleet.detector.job --sim down         # IIS stops answering on sim-web0
+    uv run python -m fleet.detector.job --sim down-linux   # Apache stops answering on sim-lx0
     uv run python -m fleet.detector.job --sim healthy
 
 The simulator replays the scenario on a simulated clock, so 4 hours run in a few seconds.
@@ -19,7 +21,9 @@ import structlog
 from fleet.detector.rules import SLOPE_WINDOW, Finding, evaluate
 from fleet.detector.samples import (
     DISK_USED_PCT,
+    LINUX_APACHE,
     PROBE_OK,
+    WINDOWS_IIS,
     FakeSource,
     MetricsSource,
     Signal,
@@ -47,7 +51,7 @@ def run_once(
     fresh = source.fetch(now - CYCLE, now)
     save_samples(conn, fresh)
     # Rules see the stored history, not just this cycle, so the 6h slope works.
-    findings = evaluate(load_samples(conn, now - SLOPE_WINDOW, now), now)
+    findings = evaluate(load_samples(conn, now - SLOPE_WINDOW, now), now, source.hosts())
     result = CycleResult(samples=len(fresh), findings=findings)
     for finding in findings:
         upsert = open_or_touch(conn, finding, now)
@@ -64,25 +68,34 @@ def run_once(
     return result
 
 
-SIM_INSTANCES = ("sim-web0", "sim-web1")
+SIM_HOSTS = {"sim-web0": WINDOWS_IIS, "sim-lx0": LINUX_APACHE}
+SIM_INSTANCES = tuple(SIM_HOSTS)
+SCENARIOS = {  # name -> (instance it breaks, what breaks)
+    "healthy": ("", ""),
+    "fill": ("sim-web0", "disk"),
+    "fill-linux": ("sim-lx0", "disk"),
+    "down": ("sim-web0", "probe"),
+    "down-linux": ("sim-lx0", "probe"),
+}
 
 
 def sim_source(scenario: str, start: datetime) -> FakeSource:
-    """Two healthy instances; the scenario breaks one of them at start + 1h."""
+    """A Windows/IIS and a Linux/Apache instance; the scenario breaks one at start + 1h."""
+    if scenario not in SCENARIOS:
+        raise ValueError(f"unknown scenario {scenario!r}")
     trouble = start + timedelta(hours=1)
     signals: dict[tuple[str, str], Signal] = {
         ("sim-web0", DISK_USED_PCT): steady(58.0),
-        ("sim-web1", DISK_USED_PCT): steady(61.0),
+        ("sim-lx0", DISK_USED_PCT): steady(58.0),
         ("sim-web0", PROBE_OK): steady(1.0),
-        ("sim-web1", PROBE_OK): steady(1.0),
+        ("sim-lx0", PROBE_OK): steady(1.0),
     }
-    if scenario == "fill":
-        signals[("sim-web0", DISK_USED_PCT)] = ramp(58.0, trouble, per_hour=8.0)
-    elif scenario == "pool":
-        signals[("sim-web1", PROBE_OK)] = fails_from(trouble)
-    elif scenario != "healthy":
-        raise ValueError(f"unknown scenario {scenario!r}")
-    return FakeSource(signals)
+    instance, what = SCENARIOS[scenario]
+    if what == "disk":
+        signals[(instance, DISK_USED_PCT)] = ramp(58.0, trouble, per_hour=8.0)
+    elif what == "probe":
+        signals[(instance, PROBE_OK)] = fails_from(trouble)
+    return FakeSource(signals, inventory=dict(SIM_HOSTS))
 
 
 def simulate(
@@ -97,7 +110,7 @@ def simulate(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sim", choices=["fill", "pool", "healthy"], required=True)
+    parser.add_argument("--sim", choices=list(SCENARIOS), required=True)
     parser.add_argument("--hours", type=float, default=4.0)
     args = parser.parse_args()
 
@@ -106,7 +119,8 @@ def main() -> None:
         init_schema(conn)
         results = simulate(conn, args.sim, start, args.hours)
         rows = conn.execute(
-            "SELECT id, instance, scenario, severity, occurrences, reason FROM incidents "
+            "SELECT id, instance, os, web_server, scenario, severity, occurrences, reason "
+            "FROM incidents "
             "WHERE instance = ANY(%s) ORDER BY id",
             (list(SIM_INSTANCES),),
         ).fetchall()

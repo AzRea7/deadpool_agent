@@ -25,3 +25,8 @@
 - **Done:** read-only diagnose MCP server (mcp 2.x `MCPServer`, six parameterized tools, fixture backend over 4 recorded incidents in `evals/incidents/`), LangGraph diagnose agent (prepare -> model <-> tools) with a Postgres checkpointer, Claude Opus 5.5 via the `anthropic` SDK, citation rule on `submit_diagnosis`, tool output wrapped as untrusted data. 41 tests pass offline with a scripted model, including resume from Postgres after a crash without repeating a model call.
 - **Blocked:** live run with real Claude deferred: no Anthropic API key set yet, and it spends ~$1-2. Phase 4 isn't tagged until `evals/run_replay_eval.py` passes.
 - **Next:** set the key, run the replay eval and the kill/resume demo, record numbers, tag `phase-4`. Then phase 5: action catalog, tiers, allowlist, dry-run hash, approval interrupt, audit log.
+
+## 2026-11-24 · Linux/Apache support (ADR-006)
+- **Done:** host type (`os`, `web_server`) on instances and incidents; scenario `app_pool_down` renamed `web_down`; runbooks tagged by platform, RB-009..RB-012 added for Linux/Apache, search filtered by platform; diagnose tools renamed OS-neutral (`system_log_tail`, `web_log_summary`, `web_server_state`) with journald/Apache sources on Linux; 4 Linux recorded incidents; `linux.bicep` + cloud-init, `log_retention.sh`, Linux fill test, `chaos/fill_disk.sh`, `chaos/stop_apache.sh`. Retrieval on 42 questions: hit@3 1.00, MRR@3 0.92 (Windows 0.93, Linux 0.90). 50 tests.
+- **Blocked:** same as before: no Azure until 2026-12-24, no Anthropic key for the live replay eval (now 8 cases).
+- **Next:** phase 5 action catalog, built per-OS from the start.

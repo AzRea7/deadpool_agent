@@ -1,8 +1,9 @@
 """Detector rules (no LLM). Pure functions over samples: same input, same findings.
 
-Starting values come from the scenarios table in the plan:
-  disk filling:  C: >= 90% used, or projected full within 12h from the 6h growth slope
-  app pool down: 3 failed health probes in 5 minutes
+Starting values come from the scenarios table in the plan. The rules are OS-neutral; the host
+inventory only changes labels (C: or /) and travels with the finding to diagnosis.
+  disk_filling: system volume >= 90% used, or projected full within 12h from the 6h slope
+  web_down:     3 failed health probes in 5 minutes (IIS app pool/service, or Apache)
 """
 
 from collections import defaultdict
@@ -11,9 +12,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Literal
 
-from fleet.detector.samples import DISK_USED_PCT, PROBE_OK, Sample
+from fleet.detector.samples import DISK_USED_PCT, PROBE_OK, WINDOWS_IIS, HostInfo, Sample
 
-Scenario = Literal["disk_filling", "app_pool_down"]
+Scenario = Literal["disk_filling", "web_down"]
 Severity = Literal["warning", "critical"]
 
 DISK_USED_WARN = 90.0
@@ -34,6 +35,7 @@ class Finding:
     severity: Severity
     reason: str
     evidence: dict[str, float | str] = field(default_factory=dict)
+    host: HostInfo = WINDOWS_IIS
 
 
 def slope_per_hour(points: Sequence[tuple[datetime, float]]) -> float:
@@ -49,7 +51,9 @@ def slope_per_hour(points: Sequence[tuple[datetime, float]]) -> float:
     return sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys, strict=True)) / var_x
 
 
-def disk_rule(instance: str, samples: Iterable[Sample], now: datetime) -> Finding | None:
+def disk_rule(
+    instance: str, samples: Iterable[Sample], now: datetime, host: HostInfo = WINDOWS_IIS
+) -> Finding | None:
     points = sorted(
         (s.ts, s.value)
         for s in samples
@@ -66,35 +70,41 @@ def disk_rule(instance: str, samples: Iterable[Sample], now: datetime) -> Findin
         "hours_to_full": round(hours_to_full, 1) if hours_to_full is not None else "n/a",
     }
 
+    label = f"{host.volume} {used:.0f}% used"
     if used >= DISK_USED_CRITICAL:
-        return Finding(instance, "disk_filling", "critical", f"C: {used:.0f}% used", evidence)
+        return Finding(instance, "disk_filling", "critical", label, evidence, host)
     if used >= DISK_USED_WARN:
-        return Finding(instance, "disk_filling", "warning", f"C: {used:.0f}% used", evidence)
+        return Finding(instance, "disk_filling", "warning", label, evidence, host)
     if hours_to_full is not None and hours_to_full <= PROJECTION_HOURS:
-        reason = f"C: {used:.0f}% used, projected full in {hours_to_full:.1f}h"
-        return Finding(instance, "disk_filling", "warning", reason, evidence)
+        reason = f"{label}, projected full in {hours_to_full:.1f}h"
+        return Finding(instance, "disk_filling", "warning", reason, evidence, host)
     return None
 
 
-def probe_rule(instance: str, samples: Iterable[Sample], now: datetime) -> Finding | None:
+def probe_rule(
+    instance: str, samples: Iterable[Sample], now: datetime, host: HostInfo = WINDOWS_IIS
+) -> Finding | None:
     recent = [s for s in samples if s.metric == PROBE_OK and now - PROBE_WINDOW < s.ts <= now]
     failed = sum(s.value < 1 for s in recent)
     if failed < PROBE_FAILS:
         return None
     reason = f"{failed} of {len(recent)} health probes failed in {PROBE_WINDOW.seconds // 60} min"
     evidence: dict[str, float | str] = {"failed": failed, "probes": len(recent)}
-    return Finding(instance, "app_pool_down", "critical", reason, evidence)
+    return Finding(instance, "web_down", "critical", reason, evidence, host)
 
 
-def evaluate(samples: Iterable[Sample], now: datetime) -> list[Finding]:
+def evaluate(
+    samples: Iterable[Sample], now: datetime, hosts: dict[str, HostInfo] | None = None
+) -> list[Finding]:
     """Run every rule for every instance seen in the samples."""
+    hosts = hosts or {}
     by_instance: dict[str, list[Sample]] = defaultdict(list)
     for s in samples:
         by_instance[s.instance].append(s)
     findings: list[Finding] = []
     for instance in sorted(by_instance):
         for rule in (disk_rule, probe_rule):
-            finding = rule(instance, by_instance[instance], now)
+            finding = rule(instance, by_instance[instance], now, hosts.get(instance, WINDOWS_IIS))
             if finding is not None:
                 findings.append(finding)
     return findings

@@ -34,8 +34,12 @@ RUNBOOKS = {
 }
 
 
-def retriever(query: str, k: int) -> Sequence[RunbookHit]:
+SEARCHES: list[str | None] = []
+
+
+def retriever(query: str, k: int, platform: str | None = None) -> Sequence[RunbookHit]:
     """Detector reason finds RB-003/006/004; a 'deploy' query finds RB-005."""
+    SEARCHES.append(platform)
     ids = ["RB-005"] if "deploy" in query else ["RB-003", "RB-006", "RB-004"]
     return [RUNBOOKS[i] for i in ids][:k]
 
@@ -92,9 +96,9 @@ def test_happy_path_diagnoses_with_citation(toolbox: ToolBox) -> None:
         [
             [
                 {"type": "text", "text": "Checking pool state."},
-                tool_use(1, "iis_state", instance="fleet000003"),
+                tool_use(1, "web_server_state", instance="fleet000003"),
             ],
-            [tool_use(2, "event_log_tail", instance="fleet000003", log="System")],
+            [tool_use(2, "system_log_tail", instance="fleet000003", log="system")],
             [submit(3, "RB-003")],
         ]
     )
@@ -111,14 +115,14 @@ def test_happy_path_diagnoses_with_citation(toolbox: ToolBox) -> None:
 def test_tool_output_is_wrapped_as_untrusted(toolbox: ToolBox) -> None:
     model = ScriptedModel(
         [
-            [tool_use(1, "event_log_tail", instance="fleet000003", log="Application")],
+            [tool_use(1, "system_log_tail", instance="fleet000003", log="application")],
             [submit(2, "RB-003")],
         ]
     )
     run(model, toolbox)
     result = model.requests[1][-1]["content"][0]
     assert result["content"].startswith(
-        '<tool_output tool="event_log_tail" trust="untrusted-data">'
+        '<tool_output tool="system_log_tail" trust="untrusted-data">'
     )
     assert "ignore previous instructions" in result["content"]  # delivered as data, quoted
 
@@ -142,7 +146,7 @@ def test_uncited_runbook_is_rejected_until_retrieved(toolbox: ToolBox) -> None:
 
 def test_bad_tool_arguments_go_back_to_the_model(toolbox: ToolBox) -> None:
     model = ScriptedModel(
-        [[tool_use(1, "iis_state", instance="not an instance!")], [submit(2, "RB-003")]]
+        [[tool_use(1, "web_server_state", instance="not an instance!")], [submit(2, "RB-003")]]
     )
     run(model, toolbox)
     result = model.requests[1][-1]["content"][0]
@@ -158,7 +162,10 @@ def test_no_submit_gets_one_nudge_then_escalates(toolbox: ToolBox) -> None:
 
 
 def test_endless_investigation_is_capped(toolbox: ToolBox) -> None:
-    turns = [[tool_use(i, "iis_state", instance="fleet000003")] for i in range(MAX_MODEL_CALLS + 5)]
+    turns = [
+        [tool_use(i, "web_server_state", instance="fleet000003")]
+        for i in range(MAX_MODEL_CALLS + 5)
+    ]
     model = ScriptedModel(turns)
     state = run(model, toolbox)
     assert state["outcome"] == "escalated" and state["model_calls"] == MAX_MODEL_CALLS
@@ -189,8 +196,8 @@ def test_resumes_from_postgres_after_a_crash(toolbox: ToolBox) -> None:
     except psycopg.OperationalError:
         pytest.skip("Postgres not running")
     turns = [
-        [tool_use(1, "iis_state", instance="fleet000003")],
-        [tool_use(2, "event_log_tail", instance="fleet000003", log="System")],
+        [tool_use(1, "web_server_state", instance="fleet000003")],
+        [tool_use(2, "system_log_tail", instance="fleet000003", log="system")],
         [submit(3, "RB-003")],
     ]
     model = ScriptedModel(turns)
@@ -212,3 +219,12 @@ def test_resumes_from_postgres_after_a_crash(toolbox: ToolBox) -> None:
     assert state["outcome"] == "diagnosed"
     assert len(model.requests) == 3  # resumed at the tools step: the first call wasn't repeated
     assert state["model_calls"] == 3
+
+
+def test_runbook_search_is_filtered_to_the_host_platform(toolbox: ToolBox) -> None:
+    SEARCHES.clear()
+    model = ScriptedModel(
+        [[tool_use(1, "search_runbook", query="pool keeps stopping")], [submit(2, "RB-003")]]
+    )
+    run(model, toolbox)
+    assert SEARCHES == ["windows", "windows"]  # the prefetch and the model's own search

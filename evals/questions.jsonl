@@ -1,30 +1,42 @@
-{"q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.", "expected": "RB-001"}
-{"q": "Can we purge the old access logs? They are eating the OS drive on web02.", "expected": "RB-001"}
-{"q": "The Windows Temp directory is full of junk and the boot volume is nearly out of room", "expected": "RB-001"}
-{"q": "Error reporting dumps from crashed processes are taking up 15 GB on one server", "expected": "RB-001"}
-{"q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour", "expected": "RB-002"}
-{"q": "FailedReqLogFiles grew to 30 GB because someone left request tracing switched on", "expected": "RB-002"}
-{"q": "Something unidentified is consuming storage on the OS disk and the usual cleanup targets are tiny", "expected": "RB-002"}
-{"q": "The SoftwareDistribution folder is enormous, is it safe to remove?", "expected": "RB-002"}
-{"q": "One node behind the load balancer keeps failing its probe while the others are fine, and users on it get 503", "expected": "RB-003"}
-{"q": "Rapid-fail protection switched off our pool on web01", "expected": "RB-003"}
-{"q": "Requests on web05 never complete, they just spin until the client gives up", "expected": "RB-003"}
-{"q": "Application log shows w3wp.exe as the faulting application every few minutes", "expected": "RB-003"}
-{"q": "Private bytes for the worker process have been rising since midnight even though traffic is low", "expected": "RB-004"}
-{"q": "OutOfMemoryException in the app logs on one server after it has been up for a day", "expected": "RB-004"}
-{"q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening", "expected": "RB-004"}
-{"q": "Resource-Exhaustion-Detector warns the system is low on virtual memory", "expected": "RB-004"}
-{"q": "Error rate jumped across the whole fleet ten minutes after we shipped v2.14", "expected": "RB-005"}
-{"q": "Every server returns HTTP 500.19 since the config change went out", "expected": "RB-005"}
-{"q": "Customers get 502 Bad Gateway on all nodes since the release pipeline finished", "expected": "RB-005"}
-{"q": "Failures tripled after deployment, should we go back to the previous version?", "expected": "RB-005"}
-{"q": "Nothing on web02 responds, every site refuses connections and pools will not start", "expected": "RB-006"}
-{"q": "Service Control Manager event 7034: the World Wide Web Publishing Service terminated unexpectedly", "expected": "RB-006"}
-{"q": "Windows Process Activation Service is not running on one VM", "expected": "RB-006"}
-{"q": "All IIS sites on a single host went down together, other hosts are fine", "expected": "RB-006"}
-{"q": "The VM is not sending heartbeats and Run Command just times out", "expected": "RB-007"}
-{"q": "Boot diagnostics screenshot shows a blue screen on instance 4", "expected": "RB-007"}
-{"q": "Should we reimage the scale set node that has been unresponsive for an hour?", "expected": "RB-007"}
-{"q": "The monitoring job has failed two runs in a row", "expected": "RB-008"}
-{"q": "The agent's managed identity lost access to Log Analytics and the detector errors out", "expected": "RB-008"}
-{"q": "Postgres has had no new samples since yesterday and no health job heartbeat either", "expected": "RB-008"}
+{"q": "Alert: free space on the system volume of vmss instance 3 is below 8 percent. The W3SVC1 folder has files going back to August.", "expected": "RB-001", "platform": "windows"}
+{"q": "Can we purge the old access logs? They are eating the OS drive on web02.", "expected": "RB-001", "platform": "windows"}
+{"q": "The Windows Temp directory is full of junk and the boot volume is nearly out of room", "expected": "RB-001", "platform": "windows"}
+{"q": "Error reporting dumps from crashed processes are taking up 15 GB on one server", "expected": "RB-001", "platform": "windows"}
+{"q": "We already ran the log cleanup but the system drive is still shrinking by 2 GB an hour", "expected": "RB-002", "platform": "windows"}
+{"q": "FailedReqLogFiles grew to 30 GB because someone left request tracing switched on", "expected": "RB-002", "platform": "windows"}
+{"q": "Something unidentified is consuming storage on the OS disk and the usual cleanup targets are tiny", "expected": "RB-002", "platform": "windows"}
+{"q": "The SoftwareDistribution folder is enormous, is it safe to remove?", "expected": "RB-002", "platform": "windows"}
+{"q": "One node behind the load balancer keeps failing its probe while the others are fine, and users on it get 503", "expected": "RB-003", "platform": "windows"}
+{"q": "Rapid-fail protection switched off our pool on web01", "expected": "RB-003", "platform": "windows"}
+{"q": "Requests on web05 never complete, they just spin until the client gives up", "expected": "RB-003", "platform": "windows"}
+{"q": "Application log shows w3wp.exe as the faulting application every few minutes", "expected": "RB-003", "platform": "windows"}
+{"q": "Private bytes for the worker process have been rising since midnight even though traffic is low", "expected": "RB-004", "platform": "windows"}
+{"q": "OutOfMemoryException in the app logs on one server after it has been up for a day", "expected": "RB-004", "platform": "windows"}
+{"q": "Available MBytes keeps dropping on web03 and the box starts paging by the evening", "expected": "RB-004", "platform": "windows"}
+{"q": "Resource-Exhaustion-Detector warns the system is low on virtual memory", "expected": "RB-004", "platform": "windows"}
+{"q": "Error rate jumped across the whole fleet ten minutes after we shipped v2.14", "expected": "RB-005", "platform": "windows"}
+{"q": "Every server returns HTTP 500.19 since the config change went out", "expected": "RB-005", "platform": "windows"}
+{"q": "Customers get 502 Bad Gateway on all nodes since the release pipeline finished", "expected": "RB-005", "platform": "windows"}
+{"q": "Failures tripled after deployment, should we go back to the previous version?", "expected": "RB-005", "platform": "windows"}
+{"q": "Nothing on web02 responds, every site refuses connections and pools will not start", "expected": "RB-006", "platform": "windows"}
+{"q": "Service Control Manager event 7034: the World Wide Web Publishing Service terminated unexpectedly", "expected": "RB-006", "platform": "windows"}
+{"q": "Windows Process Activation Service is not running on one VM", "expected": "RB-006", "platform": "windows"}
+{"q": "All IIS sites on a single host went down together, other hosts are fine", "expected": "RB-006", "platform": "windows"}
+{"q": "The VM is not sending heartbeats and Run Command just times out", "expected": "RB-007", "platform": "windows"}
+{"q": "Boot diagnostics screenshot shows a blue screen on instance 4", "expected": "RB-007", "platform": "windows"}
+{"q": "Should we reimage the scale set node that has been unresponsive for an hour?", "expected": "RB-007", "platform": "windows"}
+{"q": "The monitoring job has failed two runs in a row", "expected": "RB-008", "platform": "windows"}
+{"q": "The agent's managed identity lost access to Log Analytics and the detector errors out", "expected": "RB-008", "platform": "windows"}
+{"q": "Postgres has had no new samples since yesterday and no health job heartbeat either", "expected": "RB-008", "platform": "windows"}
+{"q": "Root filesystem on web-lx2 is at 94% and /var/log/apache2 has access logs going back two months", "expected": "RB-009", "platform": "linux"}
+{"q": "logrotate hasn't rotated the Apache logs since October, the status file shows an old date", "expected": "RB-009", "platform": "linux"}
+{"q": "journalctl --disk-usage says the journal is using 9 GB on the Ubuntu node", "expected": "RB-009", "platform": "linux"}
+{"q": "df shows / at 97% but du only finds 40 GB, somebody rm'd the big access log earlier", "expected": "RB-010", "platform": "linux"}
+{"q": "Disk keeps growing on the Linux VM even after we cleaned the Apache logs and the journal", "expected": "RB-010", "platform": "linux"}
+{"q": "No space left on device but df -h shows free space, df -i says inodes are at 100%", "expected": "RB-010", "platform": "linux"}
+{"q": "Apache error.log keeps saying server reached MaxRequestWorkers and the site is timing out", "expected": "RB-011", "platform": "linux"}
+{"q": "systemctl status apache2 shows failed and the health probe on that host is down", "expected": "RB-011", "platform": "linux"}
+{"q": "Children are dying with exit signal Segmentation fault (11) on one Apache server", "expected": "RB-011", "platform": "linux"}
+{"q": "Kernel log says Out of memory: Killed process (apache2) on lx-web03", "expected": "RB-012", "platform": "linux"}
+{"q": "MemAvailable keeps dropping all night on the Linux box and it starts swapping", "expected": "RB-012", "platform": "linux"}
+{"q": "All the Apache servers started logging AH01114 failed to make connection to backend right after the release", "expected": "RB-005", "platform": "linux"}

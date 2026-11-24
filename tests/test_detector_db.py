@@ -64,10 +64,24 @@ def test_disk_fill_opens_one_incident_not_many(conn: Conn) -> None:
     assert isinstance(used, float) and used < 75
 
 
-def test_pool_down_opens_one_incident(conn: Conn) -> None:
-    simulate(conn, "pool", START, hours=3)
+def test_web_down_opens_one_incident(conn: Conn) -> None:
+    simulate(conn, "down", START, hours=3)
     rows = incidents(conn)
-    assert [(r[0], r[1]) for r in rows] == [("sim-web1", "app_pool_down")]
+    assert [(r[0], r[1]) for r in rows] == [("sim-web0", "web_down")]
+
+
+def test_linux_incidents_carry_the_host(conn: Conn) -> None:
+    simulate(conn, "fill-linux", START, hours=6)
+    rows = conn.execute(
+        "SELECT instance, os, web_server, scenario, reason FROM incidents"
+    ).fetchall()
+    assert len(rows) == 1
+    instance, os_, web, scenario, reason = rows[0]
+    assert (instance, os_, web, scenario) == ("sim-lx0", "linux", "apache", "disk_filling")
+    assert isinstance(reason, str) and reason.startswith("/ ")
+    simulate(conn, "down-linux", START, hours=3)  # simulate() clears earlier sim rows first
+    rows = conn.execute("SELECT instance, os, scenario FROM incidents").fetchall()
+    assert rows == [("sim-lx0", "linux", "web_down")]
 
 
 def test_resolved_incident_allows_a_new_one(conn: Conn) -> None:
@@ -89,7 +103,7 @@ def test_severity_never_drops_while_active(conn: Conn) -> None:
 
 
 def test_escalated_incident_blocks_reopening(conn: Conn) -> None:
-    finding = Finding("web0", "app_pool_down", "critical", "3 of 5 probes failed")
+    finding = Finding("web0", "web_down", "critical", "3 of 5 probes failed")
     first = open_or_touch(conn, finding, START)
     conn.execute("UPDATE incidents SET status = 'escalated' WHERE id = %s", (first.incident_id,))
     again = open_or_touch(conn, finding, START + timedelta(minutes=15))

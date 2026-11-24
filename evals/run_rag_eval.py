@@ -1,4 +1,4 @@
-"""30-question runbook retrieval eval: hit rate and MRR, compared across chunking strategies.
+"""Runbook retrieval eval: hit rate and MRR, compared across chunking strategies.
 
     uv run python evals/run_rag_eval.py                 # all strategies, prints a table
     uv run python evals/run_rag_eval.py --gate section  # exit 1 if 'section' misses the targets
@@ -40,8 +40,17 @@ def run(name: str, chunker: Chunker, cases: list[dict[str, str]]) -> dict[str, o
     collection = f"eval_{name.replace('-', '_')}"
     chunks = load_runbooks(Path("runbooks"), chunker)
     index_chunks(client, chunks, collection)
+    # Search the way the agent does: filtered to the host's platform plus shared runbooks.
     ranked = [
-        (c["expected"], [h.runbook_id for h in search_runbook(c["q"], DEPTH, client, collection)])
+        (
+            c["expected"],
+            [
+                h.runbook_id
+                for h in search_runbook(
+                    c["q"], DEPTH, client, collection, platform=c.get("platform")
+                )
+            ],
+        )
         for c in cases
     ]
     by_k: dict[int, Scores] = {k: score(ranked, k) for k in (1, 3, 5)}
@@ -50,7 +59,15 @@ def run(name: str, chunker: Chunker, cases: list[dict[str, str]]) -> dict[str, o
         for c, (exp, ids) in zip(cases, ranked, strict=True)
         if ids[:1] != [exp]
     ]
+    per_platform = {
+        plat: score([r for c, r in zip(cases, ranked, strict=True) if c.get("platform") == plat], 3)
+        for plat in sorted({c.get("platform", "any") for c in cases})
+    }
     return {
+        "per_platform": {
+            p: {"n": s.n, "hit@1": s.hit_at_1, "hit@3": s.hit_at_k, "mrr@3": s.mrr_at_k}
+            for p, s in per_platform.items()
+        },
         "strategy": name,
         "chunks": len(chunks),
         "hit@1": by_k[1].hit_at_1,
@@ -80,6 +97,13 @@ def main() -> int:
             f"{r['strategy']:<12}{r['chunks']:>7}{r['hit@1']:>7.2f}{r['hit@3']:>7.2f}"
             f"{r['hit@5']:>7.2f}{r['mrr@3']:>7.2f}"
         )
+    for r in results:
+        per = r["per_platform"]
+        assert isinstance(per, dict)
+        parts = [
+            f"{p} n={v['n']} hit@1={v['hit@1']:.2f} MRR@3={v['mrr@3']:.2f}" for p, v in per.items()
+        ]
+        print(f"  {r['strategy']:<12}" + "   ".join(parts))
     for r in results:
         misses = r["top1_misses"]
         assert isinstance(misses, list)

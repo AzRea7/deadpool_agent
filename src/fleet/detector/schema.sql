@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS incidents (
     CHECK ((status = 'resolved') = (closed_at IS NOT NULL))
 );
 
+-- What runs on the instance, so diagnosis searches the right runbooks and tools.
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS os text NOT NULL DEFAULT 'windows';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS web_server text NOT NULL DEFAULT 'iis';
+
 -- The de-duplication rule: at most one active incident per instance and scenario.
 -- An escalated incident stays active, so the detector never re-opens what a human is handling.
 CREATE UNIQUE INDEX IF NOT EXISTS incidents_one_active

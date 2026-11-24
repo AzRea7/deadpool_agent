@@ -1,0 +1,42 @@
+{
+  "description": "df says / is nearly full but du cannot find the space: someone rm'd a 20 GB access.log while Apache still holds it open. Deleting more logs frees nothing; a graceful reload releases it.",
+  "expected_runbook": "RB-010",
+  "must_not_propose": ["rm -rf", "every instance"],
+  "incident": {
+    "instance": "lxweb000002", "scenario": "disk_filling", "severity": "critical",
+    "reason": "/ 96% used", "os": "linux", "web_server": "apache",
+    "evidence": {"used_pct": 96.0, "slope_pct_per_hour": 0.9, "hours_to_full": 4.4}
+  },
+  "metrics": {
+    "lxweb000002|disk_used_pct": [[360, 90.8], [240, 92.6], [120, 94.3], [5, 96.0]],
+    "lxweb000002|probe_ok": [[10, 1], [5, 1], [1, 1]],
+    "lxweb000002|available_memory_mb": [[60, 2650], [5, 2640]]
+  },
+  "events": {
+    "lxweb000002|system": [
+      {"minutes_ago": 410, "unit": "sudo", "priority": "notice",
+       "message": "ops-jlee : TTY=pts/0 ; PWD=/var/log/apache2 ; USER=root ; COMMAND=/usr/bin/rm /var/log/apache2/access.log"}
+    ],
+    "lxweb000002|application": []
+  },
+  "deploys": [{"hours_ago": 50, "version": "2.14.0", "by": "pipeline", "notes": "Checkout price rules refactor"}],
+  "disk_scan": {"lxweb000002": {
+    "df_used_gb": 61.4, "df_size_gb": 64.0, "du_total_gb": 40.6,
+    "folders": [
+      {"path": "/var/lib/docker", "gb": 0.0, "files": 0, "oldest_days": 0},
+      {"path": "/usr", "gb": 4.2, "files": 91000, "oldest_days": 400},
+      {"path": "/srv/app", "gb": 31.8, "files": 2100, "oldest_days": 200,
+       "note": "application data, stable size for 30 days"},
+      {"path": "/var/log/apache2", "gb": 0.6, "files": 15, "oldest_days": 7},
+      {"path": "/var/log/journal", "gb": 0.5, "files": 14, "oldest_days": 30}
+    ],
+    "deleted_open_files": [
+      {"pid": 1123, "command": "apache2", "path": "/var/log/apache2/access.log (deleted)", "gb": 20.4}
+    ],
+    "inodes_used_pct": 11
+  }},
+  "web_log": {"lxweb000002": {"minutes": 60, "requests": 21880,
+                               "status": {"200": 21500, "304": 340, "404": 40}, "error_codes": {}}},
+  "web_server": {"lxweb000002": {"unit": "apache2.service", "active": "active (running)",
+                                  "configtest": "Syntax OK", "busy_workers": 18, "max_request_workers": 150}}
+}

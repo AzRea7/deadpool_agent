@@ -33,6 +33,7 @@ def index_chunks(client: QdrantClient, chunks: list[Chunk], collection: str = CO
                 "title": c.title,
                 "section": c.section,
                 "text": c.text,
+                "platform": c.platform,
             },
         )
         for c, v in zip(chunks, vectors, strict=True)

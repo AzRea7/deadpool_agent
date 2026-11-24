@@ -1,0 +1,42 @@
+{
+  "description": "Linux disk filling because logrotate has failed for two months on insecure directory permissions, so Apache logs are never rotated away.",
+  "expected_runbook": "RB-009",
+  "incident": {
+    "instance": "lxweb000001", "scenario": "disk_filling", "severity": "warning",
+    "reason": "/ 93% used", "os": "linux", "web_server": "apache",
+    "evidence": {"used_pct": 93.0, "slope_pct_per_hour": 0.3, "hours_to_full": 23.3}
+  },
+  "metrics": {
+    "lxweb000001|disk_used_pct": [[360, 91.2], [240, 91.8], [120, 92.4], [5, 93.0]],
+    "lxweb000001|probe_ok": [[10, 1], [5, 1], [1, 1]],
+    "lxweb000001|available_memory_mb": [[60, 2810], [5, 2790]]
+  },
+  "events": {
+    "lxweb000001|system": [
+      {"minutes_ago": 300, "unit": "logrotate.service", "priority": "err",
+       "message": "error: skipping \"/var/log/apache2/access.log\" because parent directory has insecure permissions (It's world writable or writable by group which is not \"root\") Set \"su\" directive in config file to tell logrotate which user/group should be used for rotation."},
+      {"minutes_ago": 300, "unit": "logrotate.service", "priority": "err",
+       "message": "logrotate.service: Main process exited, code=exited, status=1/FAILURE"}
+    ],
+    "lxweb000001|application": []
+  },
+  "deploys": [{"hours_ago": 1440, "version": "infra-2026.09", "by": "m.chen",
+               "notes": "chmod 775 /var/log/apache2 so the deploy user can read logs"}],
+  "disk_scan": {"lxweb000001": {
+    "df_used_gb": 27.9, "df_size_gb": 30.0, "du_total_gb": 27.6,
+    "folders": [
+      {"path": "/var/log/apache2", "gb": 19.4, "files": 128, "oldest_days": 64,
+       "note": "access.log.1 .. access.log.63 uncompressed, error.log.1 .. error.log.63"},
+      {"path": "/usr", "gb": 4.1, "files": 91000, "oldest_days": 400},
+      {"path": "/var/log/journal", "gb": 0.4, "files": 12, "oldest_days": 30},
+      {"path": "/var/cache/apt", "gb": 0.3, "files": 40, "oldest_days": 20},
+      {"path": "/tmp", "gb": 0.0, "files": 6, "oldest_days": 1}
+    ],
+    "logrotate_status": {"/var/log/apache2/*.log": "last rotated 2026-09-21"},
+    "deleted_open_files": []
+  }},
+  "web_log": {"lxweb000001": {"minutes": 60, "requests": 16420,
+                               "status": {"200": 16100, "304": 290, "404": 30}, "error_codes": {}}},
+  "web_server": {"lxweb000001": {"unit": "apache2.service", "active": "active (running)",
+                                  "configtest": "Syntax OK", "busy_workers": 12, "max_request_workers": 150}}
+}

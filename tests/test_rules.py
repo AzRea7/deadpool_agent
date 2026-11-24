@@ -80,7 +80,7 @@ def test_two_failed_probes_are_not_enough() -> None:
 def test_three_failed_probes_in_five_minutes() -> None:
     finding = probe_rule("web0", probes([1, 0, 0, 0]), NOW)
     assert finding is not None
-    assert finding.scenario == "app_pool_down"
+    assert finding.scenario == "web_down"
     assert finding.evidence["failed"] == 3
 
 
@@ -119,3 +119,19 @@ def test_fake_source_shapes() -> None:
     assert web0_disk[-1] == 60.0
     web0_probe = [s.value for s in samples if s.metric == PROBE_OK]
     assert web0_probe[:3] == [1.0, 0.0, 0.0]
+
+
+def test_linux_host_labels_the_root_volume() -> None:
+    from fleet.detector.samples import LINUX_APACHE
+
+    finding = disk_rule("lx0", disk([92.0] * 6), NOW, LINUX_APACHE)
+    assert finding is not None and finding.reason == "/ 92% used"
+    assert finding.host.os == "linux" and finding.host.web_server == "apache"
+
+
+def test_evaluate_uses_the_inventory() -> None:
+    from fleet.detector.samples import LINUX_APACHE
+
+    samples = [Sample("lx0", PROBE_OK, NOW - timedelta(minutes=i), 0.0) for i in range(3)]
+    findings = evaluate(samples, NOW, {"lx0": LINUX_APACHE})
+    assert [(f.scenario, f.host.os) for f in findings] == [("web_down", "linux")]

@@ -3,8 +3,10 @@
     FLEET_DIAGNOSE_CASE=evals/incidents/pool_crash.json \\
         uv run python -m fleet.mcp_servers.diagnose_server     # stdio transport
 
-Separation of duties: this server only reads. Action tools live in a different server with
-different credentials (phase 5), and the diagnose agent is never given them.
+Works for Windows/IIS and Linux/Apache hosts: tool names are OS-neutral and each result names
+the host type and the underlying source. Separation of duties: this server only reads. Action
+tools live in a different server with different credentials (phase 5), and the diagnose agent
+is never given them.
 """
 
 import json
@@ -27,7 +29,7 @@ def _result(payload: dict[str, Any]) -> str:
 def build_server(backend: DiagnoseBackend) -> MCPServer:
     server: MCPServer = MCPServer(
         name="fleet-diagnose",
-        instructions="Read-only diagnostics for Windows/IIS scale set instances.",
+        instructions="Read-only diagnostics for Windows/IIS and Linux/Apache scale set instances.",
     )
 
     def safe(call: Any) -> str:
@@ -38,25 +40,30 @@ def build_server(backend: DiagnoseBackend) -> MCPServer:
 
     @server.tool(annotations=READ_ONLY)
     def metric_series(
-        instance: str, metric: Literal["disk_used_pct", "probe_ok"], hours: int = 6
+        instance: str,
+        metric: Literal["disk_used_pct", "probe_ok", "available_memory_mb"],
+        hours: int = 6,
     ) -> str:
-        """Time series for one instance: C: used percent, or health probes (1 ok, 0 failed)."""
+        """Time series for one instance: system volume used % (C: or /), health probes
+        (1 ok, 0 failed) or available memory in MB."""
         return safe(lambda: backend.metric_series(instance, metric, hours))
 
     @server.tool(annotations=READ_ONLY)
-    def event_log_tail(
+    def system_log_tail(
         instance: str,
-        log: Literal["System", "Application"],
+        log: Literal["system", "application"],
         hours: int = 2,
         max_events: int = 20,
     ) -> str:
-        """Recent Windows event log entries (newest first) for one instance."""
-        return safe(lambda: backend.event_log_tail(instance, log, hours, max_events))
+        """Recent log entries, newest first. Windows: System or Application event log.
+        Linux: system = systemd journal (kernel, units), application = Apache error log."""
+        return safe(lambda: backend.system_log_tail(instance, log, hours, max_events))
 
     @server.tool(annotations=READ_ONLY)
-    def iis_log_summary(instance: str) -> str:
-        """Request counts by HTTP status and HTTPERR reasons for the recent window."""
-        return safe(lambda: backend.iis_log_summary(instance))
+    def web_log_summary(instance: str) -> str:
+        """Recent web server traffic: requests by HTTP status, plus IIS HTTPERR reasons or
+        Apache error codes and the slowest or most failing URLs."""
+        return safe(lambda: backend.web_log_summary(instance))
 
     @server.tool(annotations=READ_ONLY)
     def recent_deploys(hours: int = 72) -> str:
@@ -65,13 +72,15 @@ def build_server(backend: DiagnoseBackend) -> MCPServer:
 
     @server.tool(annotations=READ_ONLY)
     def disk_usage_scan(instance: str) -> str:
-        """Largest folders on C: with size, file count and oldest file age. Reads only."""
+        """Largest folders on the system volume with size and oldest file age. On Linux also
+        df vs du totals and deleted-but-open files (lsof +L1). Reads only."""
         return safe(lambda: backend.disk_usage_scan(instance))
 
     @server.tool(annotations=READ_ONLY)
-    def iis_state(instance: str) -> str:
-        """App pool states and the WAS / W3SVC service status on one instance."""
-        return safe(lambda: backend.iis_state(instance))
+    def web_server_state(instance: str) -> str:
+        """Web server health. Windows: app pool states and WAS/W3SVC services. Linux: the
+        apache2 systemd unit, apachectl configtest and worker usage."""
+        return safe(lambda: backend.web_server_state(instance))
 
     return server
 

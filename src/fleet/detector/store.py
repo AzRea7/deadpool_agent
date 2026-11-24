@@ -58,8 +58,9 @@ def open_or_touch(
     row = conn.execute(
         """
         INSERT INTO incidents
-            (instance, scenario, severity, reason, evidence, opened_at, last_seen_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (instance, scenario, severity, reason, evidence, opened_at, last_seen_at,
+             os, web_server)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (instance, scenario) WHERE closed_at IS NULL DO UPDATE SET
             occurrences  = incidents.occurrences + 1,
             last_seen_at = EXCLUDED.last_seen_at,
@@ -77,6 +78,8 @@ def open_or_touch(
             Jsonb(finding.evidence),
             now,
             now,
+            finding.host.os,
+            finding.host.web_server,
         ),
     ).fetchone()
     assert row is not None

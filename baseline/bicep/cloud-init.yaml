@@ -1,0 +1,64 @@
+#cloud-config
+# Linux/Apache instance setup for the baseline scale set (ADR-001, ADR-006). Runs on first boot,
+# including after a reimage or automatic repair.
+package_update: true
+packages: [apache2, psmisc]  # psmisc: fuser, so retention never deletes a log Apache has open
+
+# Data disk (LUN 0) for Apache logs, mounted at /data, so a log flood never fills /.
+disk_setup:
+  /dev/disk/azure/scsi1/lun0: {table_type: gpt, layout: true, overwrite: false}
+fs_setup:
+  - {device: /dev/disk/azure/scsi1/lun0, partition: 1, filesystem: ext4, label: logs}
+mounts:
+  - [LABEL=logs, /data, ext4, "defaults,nofail", "0", "2"]
+
+write_files:
+  - path: /opt/fleet/log_retention.sh
+    permissions: "0755"
+    encoding: b64
+    content: __RETENTION_SCRIPT_B64__
+  - path: /etc/systemd/system/fleet-log-retention.service
+    content: |
+      [Unit]
+      Description=Fleet baseline Apache log retention
+      [Service]
+      Type=oneshot
+      ExecStart=/opt/fleet/log_retention.sh --days __RETENTION_DAYS__ --log-root /data/apache-logs --apply
+  - path: /etc/systemd/system/fleet-log-retention.timer
+    content: |
+      [Unit]
+      Description=Run fleet log retention hourly
+      [Timer]
+      OnCalendar=hourly
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+  # Cap the journal so it cannot fill / either.
+  - path: /etc/systemd/journald.conf.d/fleet.conf
+    content: |
+      [Journal]
+      SystemMaxUse=500M
+  # Rotate daily and keep 7; owned by root with mode 750 so logrotate never skips it.
+  - path: /etc/logrotate.d/apache2
+    content: |
+      /data/apache-logs/*.log {
+          daily
+          rotate 7
+          missingok
+          notifempty
+          compress
+          delaycompress
+          create 640 root adm
+          sharedscripts
+          postrotate
+              if pgrep -x apache2 >/dev/null; then systemctl reload apache2; fi
+          endscript
+      }
+
+runcmd:
+  - [bash, -c, "mkdir -p /data/apache-logs && chown root:adm /data/apache-logs && chmod 750 /data/apache-logs"]
+  - [bash, -c, "sed -i 's|^export APACHE_LOG_DIR=.*|export APACHE_LOG_DIR=/data/apache-logs$SUFFIX|' /etc/apache2/envvars"]
+  - [systemctl, restart, systemd-journald]
+  - [systemctl, restart, apache2]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, --now, fleet-log-retention.timer]

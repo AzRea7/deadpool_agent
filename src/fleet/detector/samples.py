@@ -8,12 +8,32 @@ the rules or the job.
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import Protocol
+from typing import Literal, Protocol
 
-DISK_USED_PCT = "disk_used_pct"  # C: used, 0-100
+DISK_USED_PCT = "disk_used_pct"  # system volume used, 0-100 (C: on Windows, / on Linux)
 PROBE_OK = "probe_ok"  # health probe result: 1 passed, 0 failed
 
 _EPOCH = datetime(2000, 1, 1, tzinfo=UTC)
+
+
+OS = Literal["windows", "linux"]
+WebServer = Literal["iis", "apache"]
+
+
+@dataclass(frozen=True)
+class HostInfo:
+    """What runs on an instance. Rules, runbook search and tools all key off this."""
+
+    os: OS = "windows"
+    web_server: WebServer = "iis"
+
+    @property
+    def volume(self) -> str:
+        return "C:" if self.os == "windows" else "/"
+
+
+WINDOWS_IIS = HostInfo("windows", "iis")
+LINUX_APACHE = HostInfo("linux", "apache")
 
 
 @dataclass(frozen=True)
@@ -27,6 +47,10 @@ class Sample:
 class MetricsSource(Protocol):
     def fetch(self, since: datetime, until: datetime) -> list[Sample]:
         """Samples with since < ts <= until."""
+        ...
+
+    def hosts(self) -> dict[str, HostInfo]:
+        """Inventory: instance -> OS and web server. Unknown instances count as Windows/IIS."""
         ...
 
 
@@ -49,6 +73,7 @@ class FakeSource:
     """Synthetic metrics: signals[(instance, metric)] is a function of time."""
 
     signals: dict[tuple[str, str], Signal]
+    inventory: dict[str, HostInfo] = field(default_factory=dict)
     steps: dict[str, timedelta] = field(
         default_factory=lambda: {
             DISK_USED_PCT: timedelta(minutes=5),
@@ -62,6 +87,9 @@ class FakeSource:
             for (instance, metric), signal in sorted(self.signals.items())
             for t in ticks(since, until, self.steps[metric])
         ]
+
+    def hosts(self) -> dict[str, HostInfo]:
+        return dict(self.inventory)
 
 
 # ---- signal shapes, used by the simulator and tests ----
