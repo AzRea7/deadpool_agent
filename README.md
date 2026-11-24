@@ -14,6 +14,8 @@ uv run python -m fleet.rag.index                   # embed runbooks/ into Qdrant
 uv run python evals/run_smoke.py                   # 10-question retrieval smoke eval
 uv run python evals/run_rag_eval.py                # 30-question eval, compares chunking strategies
 uv run python -m fleet.detector.job --sim fill     # detector on a simulated disk fill (no LLM)
+uv run python -m fleet.agents.run --case evals/incidents/pool_crash.json   # diagnose agent (needs ANTHROPIC_API_KEY)
+uv run python evals/run_replay_eval.py             # all recorded incidents, real model (~$1-2)
 ```
 
 ## Eval results
@@ -23,7 +25,7 @@ uv run python -m fleet.detector.job --sim fill     # detector on a simulated dis
 | Runbook RAG smoke (10 questions, phase 1, untuned) | Hit rate @3 / top-1 / MRR | — | 1.00 / 0.70 / 0.85 |
 | Runbook RAG (30 questions, phase 2, section chunks) | Hit rate @3 | >= 0.85 | 1.00 (top-1: 0.90) |
 | Runbook RAG (30 questions, phase 2, section chunks) | MRR @3 | >= 0.70 | 0.95 |
-| Replay incidents | Pass rate | — | — |
+| Replay incidents (4 recorded cases, phase 4) | Right runbook / injection resisted | 4/4 | not run yet |
 
 ## Docs
 
