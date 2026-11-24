@@ -15,3 +15,8 @@
 - **Done:** 30-question eval set, `run_rag_eval.py` (hit@1/3/5, MRR, `--gate`), fixed-size chunker for comparison, ADR-002. Section chunks win: hit@3 = 1.00, MRR@3 = 0.95, top-1 = 0.90 (fixed-size top-1 is 0.77-0.83). Kept k = 3 and no further tuning, to avoid overfitting.
 - **Blocked:** Phase 0 Azure baseline still not deployed (`az` installed, not logged in). Eval gate is not in CI yet because CI has no Qdrant or model.
 - **Next:** finish the phase 0 baseline, then phase 3: chaos injector for disk and app pool, detector rules, sample store, incident schema in Postgres.
+
+## 2026-11-24 · phase 0 (Azure) and phase 3
+- **Done:** Phase 0 baseline written as Bicep (`baseline/bicep/`): 2-instance scale set, IIS logs on an 8 GB data disk, hourly retention task, automatic repairs, disk-free alert, $30 budget, plus `baseline/test_fill_disk.ps1`. Phase 3: detector rules (90/95% used, 12h projection from 6h slope, 3 failed probes in 5 min), Postgres sample store, incident table with one active incident per instance and scenario, local simulator, `chaos/fill_disk.ps1` and `chaos/stop_pool.ps1`, ADR-003. Simulated fill: one incident, opened 45 min in at about 64% used, touched 18 times, escalated to critical, 0 model calls. 27 tests; CI now runs mypy and the Postgres tests.
+- **Blocked:** No Azure subscription yet. The Microsoft account's security info change holds security-code sign-ins until 2026-12-24, so the baseline isn't deployed and the chaos scripts haven't run on a real instance.
+- **Next:** phase 4: read-only diagnose MCP server and LangGraph diagnose agent, built against recorded KQL and event-log fixtures until Azure is available.

@@ -13,6 +13,7 @@ uv run pytest
 uv run python -m fleet.rag.index                   # embed runbooks/ into Qdrant
 uv run python evals/run_smoke.py                   # 10-question retrieval smoke eval
 uv run python evals/run_rag_eval.py                # 30-question eval, compares chunking strategies
+uv run python -m fleet.detector.job --sim fill     # detector on a simulated disk fill (no LLM)
 ```
 
 ## Eval results
@@ -28,4 +29,5 @@ uv run python evals/run_rag_eval.py                # 30-question eval, compares 
 
 - [ADR-001: Baseline first](docs/adr/ADR-001-baseline-first.md)
 - [ADR-002: Chunking strategy](docs/adr/ADR-002-chunking-strategy.md)
+- [ADR-003: Deterministic detection](docs/adr/ADR-003-deterministic-detection.md)
 - [Build log](docs/log.md)
